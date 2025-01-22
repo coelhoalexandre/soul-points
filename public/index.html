@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Soul Points - Jogo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-900">
+    <main class="relative flex items-center justify-center gap-8 h-screen">
+      <button
+        id="logout_button"
+        class="absolute top-2 right-2 border-2 border-neutral-200 rounded-md px-3 py-2 bg-neutral-200 hover:bg-gray-900 hover:text-neutral-200"
+      >
+        Logout
+      </button>
+      <div
+        hidden
+        id="modal_bg"
+        class="absolute h-screen w-screen bg-black opacity-50"
+      ></div>
+      <dialog id="game_over" class="h-64 bg-transparent">
+        <div class="flex flex-col justify-center items-center gap-8 h-full">
+          <h2 class="font-bold text-neutral-200 text-3xl">Game Over</h2>
+
+          <p class="text-neutral-200">
+            Pontos de Alma: <span id="soul_points_span"></span>
+          </p>
+
+          <div class="flex gap-4">
+            <button
+              id="try_again"
+              class="border-2 border-neutral-200 rounded-md px-3 py-2 bg-neutral-200 hover:bg-gray-900 hover:text-neutral-200"
+            >
+              Tentar novamente!
+            </button>
+            <button
+              id="logout_button"
+              class="border-2 border-neutral-200 rounded-md px-3 py-2 bg-neutral-200 hover:bg-gray-900 hover:text-neutral-200"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </dialog>
+
+      <section
+        id="ranking_section"
+        class="border-2 border-neutral-200 p-2 overflow-auto"
+      >
+        <h2
+          class="mb-2 border-b-2 pb-1 text-lg text-neutral-200 font-bold text-center uppercase"
+        >
+          RANKING
+        </h2>
+        <ol id="ranking_list" class="flex flex-col gap-2 text-neutral-200"></ol>
+      </section>
+
+      <section
+        id="game_section"
+        class="flex flex-col items-center justify-center"
+      >
+        <p id="position" class="flex gap-4 text-lg text-neutral-200"></p>
+        <canvas id="game_canvas" class="border-2 border-neutral-200"></canvas>
+      </section>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>

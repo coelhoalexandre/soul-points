@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Soul Points - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-900">
+    <main class="flex items-center justify-center h-screen">
+      <form
+        id="sign-in-form"
+        class="flex flex-col gap-4 border-2 rounded p-8"
+        action=""
+      >
+        <h2 class="text-2xl text-neutral-200 font-bold text-center uppercase">
+          Login
+        </h2>
+
+        <div hidden id="container-errors"></div>
+
+        <div class="flex flex-col gap-2">
+          <label for="name" class="text-neutral-200"
+            >Digite seu usuário:
+          </label>
+          <input
+            type="text"
+            name="name"
+            id="name"
+            required
+            minlength="3"
+            maxlength="16"
+            class="bg-gray-600 p-1 rounded text-neutral-200"
+          />
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <label for="password" class="text-neutral-200"
+            >Digite sua senha:</label
+          >
+          <input
+            type="password"
+            name="password"
+            id="password"
+            required
+            minlength="4"
+            class="bg-gray-600 p-1 rounded text-neutral-200"
+          />
+        </div>
+
+        <a
+          href="/cadastro"
+          class="text-sm text-neutral-200 text-right hover:underline"
+          >Deseja se cadastrar?</a
+        >
+
+        <button
+          type="submit"
+          class="px-3 py-2 border-2 border-neutral-200 rounded-md bg-neutral-200 font-bold text-gray-900 uppercase hover:bg-gray-900 hover:text-neutral-200"
+        >
+          logar
+        </button>
+      </form>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>
