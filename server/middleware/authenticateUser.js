@@ -1,4 +1,4 @@
-import User from "../model/User.js";
+import User from "../models/User.js";
 
 const authenticateUser = (socket, next) => {
   const accessToken = socket.handshake.auth.accessToken;

@@ -1,25 +1,12 @@
-import {
-  cellSize,
-  gameObj,
-  playerObj,
-  pointsToChangeColor,
-  soulObj,
-} from "./objects/game.js";
-import GameController from "./controller/GameController.js";
-import PlayerController from "./controller/PlayerController.js";
-import PureSoulController from "./controller/PureSoulController.js";
-import drawSoul from "./utils/drawSoul.js";
-import Cookie from "./utils/Cookie.js";
+import GameStateController from "./controller/GameStateController.js";
+import KeyboardController from "./controller/KeyboardController.js";
+import Cookie from "./models/Cookie.js";
 
 const socket = io("/", {
   auth: {
     accessToken: Cookie.readCookie("access_token"),
   },
 });
-
-const gameContext = {};
-
-const controllers = {};
 
 const logoutButtons = document.querySelectorAll("#logout_button");
 
@@ -30,16 +17,6 @@ logoutButtons.forEach((logoutButton) => {
     Cookie.deleteCookie("access_token");
   });
 });
-
-const emitUpdateSoul = {
-  player: (name, dto, isDestroy = true) =>
-    socket.emit("update_player", { name, dto, isDestroy }),
-  pureSoul: (name, dto, isDestroy = true) =>
-    socket.emit("update_pure_soul", { name, dto, isDestroy }),
-};
-
-const emitCheckCollision = (options, callback) =>
-  socket.emit("check_collision", options, callback);
 
 socket.on("authenticated_user", (username) => {
   socket.auth.username = username;
@@ -55,94 +32,55 @@ socket.on("user_already_authenticated", () => {
   window.location.href = "/login";
 });
 
-socket.on("create_game", () => {
-  controllers.game = new GameController(gameObj);
+socket.on("player_limit", () => {
+  alert("Limite de Jogadores alcançado!");
+  window.location.href = "/login";
+});
+
+const gameStateController = new GameStateController();
+const keyboardController = new KeyboardController();
+
+const isCurrentPlayer = (name) => name === socket.auth.username;
+
+socket.on("create_game", (gameState) => {
   const canvasElement = document.getElementById("game_canvas");
-
-  controllers.game.draw({ canvasElement, cellSize });
-  gameContext.ctx = controllers.game.ctx;
-  gameContext.gameSize = controllers.game.game.getSize();
-
   const rankingSectionElement = document.getElementById("ranking_section");
 
+  gameStateController.setInitialState(gameState);
+  gameStateController.drawCanvas(canvasElement);
+  gameStateController.drawSouls(socket.auth.username, requestAnimationFrame);
+
   rankingSectionElement.classList.add(
-    `w-[${gameObj.size.width * 0.75}px]`,
-    `max-h-[${gameObj.size.height}px]`
+    `w-[${gameState.realSize.width * 0.75}px]`,
+    `max-h-[${gameState.realSize.height}px]`
   );
 
   return;
 });
 
-socket.on("generate_pure_soul", async (name, updatePureSoul) => {
-  controllers.pureSoul = new PureSoulController(
-    { name, ...soulObj },
-    gameContext.gameSize,
-    { updateSoul: emitUpdateSoul, checkCollision: emitCheckCollision }
+socket.on("init_game", () => {
+  keyboardController.enableKeydown();
+  keyboardController.addEventListener("keydown", (code) =>
+    socket.emit("keydown", {
+      type: "keydown",
+      code,
+      name: socket.auth.username,
+    })
   );
-
-  controllers.pureSoul.insertGameContext(gameContext);
-
-  updatePureSoul(controllers.pureSoul.getEssentialsProperty());
-
-  return;
 });
 
-socket.on("generate_player", (name, isDefinedPlayer, player, createPlayer) => {
-  const setPlayerController = () => {
-    controllers.player = new PlayerController(
-      { colorOptions: playerObj.colorOptions, ...player },
-      controllers.game.game.getSize(),
-      pointsToChangeColor,
-      {
-        updateSoul: emitUpdateSoul,
-        checkCollision: emitCheckCollision,
-      }
-    );
-  };
+socket.on("update_state", ({ dto }) => {
+  gameStateController.updateState(dto);
+});
 
-  if (isDefinedPlayer) setPlayerController();
-  else {
-    player = { name, ...playerObj };
-    setPlayerController();
-    createPlayer(controllers.player.getEssentialsProperty());
+socket.on("update_position_element", ({ player }) => {
+  if (isCurrentPlayer(player.name)) {
+    const positionElement = document.getElementById("position");
+    positionElement.innerHTML = `<span>X: <strong>${player.x}</strong></span> <span>Y: <strong>${player.y}</strong></span>`;
   }
-
-  controllers.player.insertGameContext(gameContext);
-
-  return;
 });
 
-socket.on("draw_souls", (players, pureSouls) => {
-  if (!gameContext.ctx) throw new Error("Context not found!");
-
-  players.forEach((soul) => drawSoul(gameContext.ctx, soul));
-  pureSouls.forEach((soul) => drawSoul(gameContext.ctx, soul));
-
-  return;
-});
-
-socket.on("draw_soul", (soul) => {
-  if (!gameContext.ctx) throw new Error("Context not found!");
-
-  drawSoul(gameContext.ctx, soul, soul.name === socket.auth.username);
-
-  return;
-});
-
-socket.on("destroy_soul", ({ x, y, width, height }) => {
-  if (!gameContext.ctx) throw new Error("Context not found!");
-  console.log("destroy_soul: ", { x, y, width, height });
-  gameContext.ctx.clearRect(x, y, width, height);
-
-  return;
-});
-
-socket.on("update_position_element", ({ x, y }) => {
-  const positionElement = document.getElementById("position");
-  positionElement.innerHTML = `<span>X: <strong>${x}</strong></span> <span>Y: <strong>${y}</strong></span>`;
-});
-
-socket.on("update_ranking", (ranking) => {
+socket.on("update_ranking", ({ ranking }) => {
   const rankingListElement = document.getElementById("ranking_list");
 
   rankingListElement.innerHTML = "";
@@ -153,39 +91,41 @@ socket.on("update_ranking", (ranking) => {
         <li class="flex border-2 border-neutral-200 py-1">
           <span class="flex justify-center border-r-2 px-2 w-fit font-bold">
             ${index + 1}
-          </span> 
+          </span>
           <span class="flex justify-center mr-2 border-r-2 px-2 w-fit font-bold">
             ${player.soulPoints}
-          </span> 
+          </span>
           ${player.name}
         </li>
         `)
   );
 });
 
-socket.on("player_is_destroyed", (name) => {
-  if (socket.auth.username === name)
-    socket.emit("game_over", (player) => {
-      controllers.player.disable();
+socket.on("game_over", (command) => {
+  if (isCurrentPlayer(command.name)) {
+    keyboardController.disableKeydown();
 
-      const modalBgElement = document.getElementById("modal_bg");
-      const dialogElement = document.getElementById("game_over");
-      const tryAgainButtonElement = document.getElementById("try_again");
-      const soulPointsElement = document.getElementById("soul_points_span");
+    const modalBgElement = document.getElementById("modal_bg");
+    const dialogElement = document.getElementById("game_over");
+    const tryAgainButtonElement = document.getElementById("try_again");
+    const soulPointsElement = document.getElementById("soul_points_span");
 
-      modalBgElement.hidden = false;
-      dialogElement.showModal();
-      soulPointsElement.textContent = `${player.lastSoulPoints}`;
+    modalBgElement.hidden = false;
+    dialogElement.showModal();
+    soulPointsElement.textContent = `${command.soulPoints}`;
 
-      const tryAgain = () => {
-        dialogElement.close();
-        modalBgElement.hidden = true;
-        controllers.player.update(player);
-        controllers.player.enable();
-        socket.emit("regenerate_player");
-        tryAgainButtonElement.removeEventListener("click", tryAgain);
-      };
+    const tryAgain = () => {
+      dialogElement.close();
+      modalBgElement.hidden = true;
+      socket.emit("regenerate_player", socket.auth.username);
+      keyboardController.enableKeydown();
+      tryAgainButtonElement.removeEventListener("click", tryAgain);
+    };
 
-      tryAgainButtonElement.addEventListener("click", tryAgain);
-    });
+    tryAgainButtonElement.addEventListener("click", tryAgain);
+  }
+});
+
+socket.on("regenerate_soul", (command) => {
+  gameStateController.regenerateSoul(command.soul.data, command.soul.category);
 });

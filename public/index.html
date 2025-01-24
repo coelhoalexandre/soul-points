@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Soul Points - Jogo</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      #game_canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        image-rendering: -moz-crisp-edges;
+      }
+    </style>
   </head>
   <body class="bg-gray-900">
     <main class="relative flex items-center justify-center gap-8 h-screen">
@@ -64,7 +71,8 @@
         <canvas id="game_canvas" class="border-2 border-neutral-200"></canvas>
       </section>
     </main>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script type="module" src="./index.js"></script>
   </body>
 </html>

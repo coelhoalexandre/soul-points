@@ -1,7 +1,7 @@
 import Soul from "./Soul.js";
 
 export default class PureSoul extends Soul {
-  constructor(pureSoulObj) {
-    super(pureSoulObj);
+  constructor(data) {
+    super("PureSoul", { ...data, soulPoints: 1 });
   }
 }

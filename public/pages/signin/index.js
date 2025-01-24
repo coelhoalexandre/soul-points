@@ -1,4 +1,4 @@
-import Cookie from "../../utils/Cookie.js";
+import Cookie from "../../models/Cookie.js";
 
 const socket = io("/signin");
 

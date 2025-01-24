@@ -1,4 +1,4 @@
-import User from "../model/User.js";
+import User from "../models/User.js";
 import UserService from "../services/UserService.js";
 import Controller from "./Controller.js";
 

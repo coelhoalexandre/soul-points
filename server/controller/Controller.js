@@ -29,9 +29,28 @@ export default class Controller {
     }
   }
 
+  async updateAll(scope, dto) {
+    try {
+      scope = scope || {};
+      dto = this.Model.validUpdateData(dto);
+      return this.service.updateAll(scope, dto);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   async updateOne(scope, dto) {
     try {
+      dto = this.Model.validUpdateData(dto);
       return this.service.updateOne(scope, dto);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async deleteOne(scope) {
+    try {
+      return this.service.deleteOne(scope);
     } catch (error) {
       console.error(error);
     }

@@ -18,7 +18,7 @@
 //   cyan: "rgb(34, 211, 238)",
 // };
 
-const colors = [
+const allColors = [
   ["teal", "rgb(45, 212, 191)"],
   ["emerald", "rgb(52, 211, 153)"],
   ["green", "rgb(74, 222, 128)"],
@@ -38,4 +38,12 @@ const colors = [
   ["cyan", "rgb(34, 211, 238)"],
 ];
 
-export default colors;
+const pureSoul = allColors.pop();
+
+const player = allColors;
+
+export default {
+  player,
+  pureSoul,
+  playerLength: allColors.length,
+};

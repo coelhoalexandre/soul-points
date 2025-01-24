@@ -16,6 +16,17 @@ export default class User {
     return `${salt}:${hashedPassword}`;
   }
 
+  static validUpdateData(data) {
+    const validProperties = ["name"];
+
+    const validData = {};
+    for (const property in data)
+      if (validProperties.includes(property))
+        validData[property] = data[property];
+
+    return validData;
+  }
+
   static isCorrectPassword(password, hashedPassword, salt) {
     const testHashedPassword = Buffer.from(
       getHashedPassword(password, salt),

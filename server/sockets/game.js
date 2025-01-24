@@ -1,63 +1,68 @@
+import io from "../index.js";
+import colors from "../GameController/assets/colors.js";
 import PlayerController from "../controller/PlayerController.js";
 import PureSoulController from "../Controller/PureSoulController.js";
-import drawInterface from "../events/drawInterface.js";
-import updateSoulInterface from "../events/updateSoulInteface.js";
-import io from "../index.js";
 import authenticateUser from "../middleware/authenticateUser.js";
+import GameController from "../GameController/index.js";
+import dbGameFunction from "../db/dbGameFunction.js";
 
-export const playerController = new PlayerController();
-export const pureSoulController = new PureSoulController();
+const gameController = new GameController();
+const playerController = new PlayerController();
+const pureSoulController = new PureSoulController();
+
+playerController.updateAll({}, { isOnline: false });
+
+gameController.setInitialState({
+  gameSize: { width: 20, height: 20 },
+  realSize: { width: 400, height: 400 },
+  colors,
+  players: [],
+  pureSouls: await pureSoulController.getAll(),
+});
+
+for (const listenerName in gameController.listenersNames)
+  gameController.addEventListener(
+    gameController.listenersNames[listenerName],
+    (command) => io.emit(command.type, command)
+  );
+
+gameController.addEventListener(
+  gameController.listenersNames.UPDATE_STATE,
+  dbGameFunction
+);
 
 io.of("/").use(authenticateUser);
 
 io.of("/").on("connection", async (socket) => {
   console.log(`User ${socket.username} is connected`);
 
-  const isAlreadyAuthenticatedUser = !!(await playerController.getOne({
-    name: socket.username,
-    isOnline: true,
-  }));
+  const isOnlinePlayer = gameController.isOnlinePlayer(socket.username);
 
-  if (isAlreadyAuthenticatedUser)
-    return socket.emit("user_already_authenticated");
+  if (isOnlinePlayer) return socket.emit("user_already_authenticated");
 
-  drawInterface(io, socket);
+  if (!gameController.isPlayerLimit) return socket.emit("player_limit");
 
-  updateSoulInterface(io, socket);
+  socket.emit("create_game", gameController.getState());
 
-  socket.on("check_collision", async ({ x, y }, callback) => {
-    callback([
-      ...(await playerController.getAll({
-        x,
-        y,
-        isOnline: true,
-        isDestroyed: false,
-      })),
-      ...(await pureSoulController.getAll({ x, y, isDestroyed: false })),
-    ]);
+  const player = gameController.createPlayer(
+    socket.username,
+    await playerController.getOne({ name: socket.username })
+  );
+
+  gameController.addPlayer(player);
+
+  socket.emit("init_game");
+
+  socket.on("keydown", (command) => {
+    gameController.keyInput(command.code, command.name);
   });
 
-  socket.on("game_over", async (callback) =>
-    callback(await playerController.getOne({ name: socket.username }))
-  );
-
-  socket.on("regenerate_player", async () =>
-    io.emit("update_ranking", await playerController.getRankingAscendingOrder())
-  );
+  socket.on("regenerate_player", (name) => {
+    gameController.regeneratePlayer(name);
+  });
 
   socket.on("disconnect", async () => {
-    io.emit(
-      "destroy_soul",
-      await playerController.getOne({ name: socket.username })
-    );
-    await playerController.updateOne(
-      { name: socket.username },
-      { isOnline: false }
-    );
-    io.emit(
-      "update_ranking",
-      await playerController.getRankingAscendingOrder()
-    );
+    gameController.disconnectPlayer(socket.username);
 
     console.log(`User ${socket.username} is disconnected`);
   });

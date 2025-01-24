@@ -1,6 +1,6 @@
 import UserController from "../controller/UserController.js";
 import io from "../index.js";
-import User from "../model/User.js";
+import User from "../models/User.js";
 
 io.of("/signin").on("connection", (socket) => {
   const userController = new UserController();

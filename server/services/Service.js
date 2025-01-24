@@ -14,15 +14,12 @@ export default class Service {
     return this.collection.find(scope).toArray();
   }
 
-  async getAllAsc(property, scope) {
-    return this.collection
-      .find(scope)
-      .sort({ [property]: 1 })
-      .toArray();
-  }
-
   async getOne(scope) {
     return this.collection.findOne(scope);
+  }
+
+  async updateAll(scope, dto) {
+    return this.collection.updateMany(scope, { $set: dto });
   }
 
   async updateOne(scope, dto) {
@@ -34,5 +31,9 @@ export default class Service {
         returnNewDocument: true,
       }
     );
+  }
+
+  async deleteOne(scope) {
+    return this.collection.deleteOne(scope);
   }
 }
