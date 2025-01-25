@@ -5,7 +5,7 @@ io.of("/signup").on("connection", (socket) => {
   const userController = new UserController();
   socket.on("sign_up_submit", async ({ name, password }) => {
     try {
-      if (await userController.isUsernameAlreadyExist(name))
+      if (!(await userController.isUsernameAlreadyExist(name)))
         return socket.emit("username_already_exists", name);
 
       await userController.create({ name, password });
