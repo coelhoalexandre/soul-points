@@ -48,9 +48,17 @@ export default class GameController {
       this.#game.setSize(gameState.gameSize);
       this.#game.realSize = gameState.realSize;
       this.#game.colors = gameState.colors;
-      this.#game.players = gameState.players;
+      this.#game.players = gameState.players.map((player) =>
+        this.createPlayer(player.name, player)
+      );
+
       if (!gameState.pureSouls.length)
         gameState.pureSouls = [this.createPureSoul()];
+      else
+        gameState.pureSouls = gameState.pureSouls.map((pureSoul) =>
+          this.createPureSoul(pureSoul)
+        );
+
       this.#game.pureSouls = gameState.pureSouls;
     } catch (error) {
       console.error(error);
@@ -111,13 +119,17 @@ export default class GameController {
     }
   }
 
-  createPureSoul() {
+  createPureSoul(dto) {
+    dto = dto || {};
     try {
       return new PureSoul({
-        name: "PureSoul",
-        color: this.#game.colors.pureSoul[1],
-        gameSize: this.#game.getSize(),
-        souls: this.#game.getSouls(),
+        ...{
+          name: "PureSoul",
+          color: this.#game.colors.pureSoul[1],
+          gameSize: this.#game.getSize(),
+          souls: this.#game.getSouls(),
+        },
+        ...dto,
       });
     } catch (error) {
       console.error(error);

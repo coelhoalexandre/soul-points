@@ -4,7 +4,7 @@ import path from "path";
 import url from "url";
 import { Server } from "socket.io";
 
-const port = process.env.port || 3001;
+const port = process.env.port || 3000;
 const app = express();
 
 const currentPath = url.fileURLToPath(import.meta.url);
