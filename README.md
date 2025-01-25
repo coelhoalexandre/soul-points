@@ -10,8 +10,8 @@
 
 - [Sobre o Projeto](#sobre-o-projeto)
 - [Instalando e Iniciando o Projeto](#instalando-e-iniciando-o-projeto)
-- [Mecânicas do Jogo](#mecanicas-do-jogo)
-- [Tecnolgias Utilizadas](#tecnologias-utilizadas)
+- [Mecânicas do Jogo](#mecânicas-do-jogo)
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
 - [Autor](#autor)
 
 ## Sobre o Projeto
@@ -53,7 +53,7 @@ Soul Points conta com algumas mecanicas que estão concentradas na pasta GameCon
 
 Todas as mêcanicas são cambiáveis e suas alterações podem ser feitas dentro de `./server/GameController`.
 
-## Tecnolgias Utilizadas
+## Tecnologias Utilizadas
 
 1. HTML
 2. Tailwind
